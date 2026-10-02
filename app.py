@@ -92,11 +92,46 @@ def login():
                     max_age=int(SESSION_LIFETIME.total_seconds()))
     return resp
 
+def get_current_user(conn):
+    token = request.cookies.get("session")
+    if not token:
+        return None
+    token_hash = hash_token(token)
+    row = conn.execute(
+        """
+        SELECT users.id, users.username, sessions.expires_at
+        FROM sessions
+        JOIN users ON users.id = sessions.user_id
+        WHERE sessions.token_hash = ?
+        """,
+        (token_hash,)).fetchone()
+
+    if row is None:
+        return None
+    if datetime.fromisoformat(row["expires_at"]) <= datetime.now(timezone.utc):
+        conn.execute("DELETE FROM sessions WHERE token_hash = ?", (token_hash,))
+        return None
+    return row
+
 @app.route("/dashboard")
 
 def dashboard():
-    return "Logged in (real dashboard coming next)"
-        
+    with get_db() as conn:
+        user = get_current_user(conn)
+    if user is None:
+        return redirect(url_for("login"))
+    return render_template("dashboard.html", username=user["username"])
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    token = request.cookies.get("session")
+    if token:
+        with get_db() as conn:
+            conn.execute("DELETE FROM sessions WHERE token_hash = ?",
+                         (hash_token(token),))
+    resp = make_response(redirect(url_for("login")))
+    resp.delete_cookie("session")
+    return resp
 
 if __name__ == "__main__":
     app.run(debug=True)
