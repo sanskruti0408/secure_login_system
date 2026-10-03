@@ -5,7 +5,7 @@ DB_PATH = "app.db"
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    conn.execute("Pragma foreign_keys = ON")
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 def init_db():
@@ -23,6 +23,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS sessions(
         token_hash TEXT PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        csrf_token TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         expires_at TEXT NOT NULL
         );
