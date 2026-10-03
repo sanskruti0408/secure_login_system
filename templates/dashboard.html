@@ -1,9 +1,19 @@
-<!doctype html>
-<html>
-<head><title>Dashboard</title></head>
-<body>
-<h1>Welcome, {{ username }}</h1>
-<p>You are logged in.</p>
-<form method = "post" action="/logout"><button type="submit">Logout</button></form>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Dashboard · SecureAuth{% endblock %}
+{% block content %}
+<div class="card">
+  <span class="user-badge">👤 {{ username }}</span>
+  <h1>You are signed in</h1>
+  <p class="muted">Your session is active for 30 minutes.</p>
+  <ul class="status">
+    <li>Password stored as an Argon2id hash</li>
+    <li>Session token stored only as a SHA-256 hash</li>
+    <li>HttpOnly, SameSite cookie</li>
+    <li>CSRF-protected logout</li>
+  </ul>
+  <form method="post" action="{{ url_for('logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="btn btn-secondary" type="submit">Sign out</button>
+  </form>
+</div>
+{% endblock %}
