@@ -56,8 +56,9 @@ def register():
 def login():
     if request.method == "GET":
         success = ("Registration successful! Please sign in."
-                    if request.args.get("registered") else None)
+                   if request.args.get("registered") else None)
         return render_template("login.html", error=None, success=success)
+
     username = request.form.get("username", "").strip().lower()
     password = request.form.get("password", "")
 
@@ -101,7 +102,6 @@ def login():
     resp.set_cookie("session", token, httponly=True, samesite="Lax",
                     max_age=int(SESSION_LIFETIME.total_seconds()))
     return resp
-
 
 def get_current_user(conn):
     token = request.cookies.get("session")
