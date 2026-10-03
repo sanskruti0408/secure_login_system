@@ -58,6 +58,8 @@ def login():
         success = ("Registration successful! Please sign in."
                     if request.args.get("registered") else None)
         return render_template("login.html", error=None, success=success)
+    username = request.form.get("username", "").strip().lower()
+    password = request.form.get("password", "")
 
     with get_db() as conn:
         user = conn.execute(
